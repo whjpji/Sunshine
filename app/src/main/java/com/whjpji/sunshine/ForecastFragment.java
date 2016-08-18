@@ -61,10 +61,10 @@ public class ForecastFragment extends Fragment {
         // );
         mForecastListView = (ListView) layout.findViewById(R.id.listview_forecast);
         // mForecastListView.setAdapter(mForecastAdapter);
-        new FetchWeatherTask().execute(
-                "http://api.openweathermap.org/data/2.5/forecast/daily?" +
-                "cnt=7&q=94043&units=metric&mode=json&appid=d0f1b1fe4ea8ccbc246f06e6b9691653"
-        );
+        String url = "http://api.openweathermap.org/data/2.5/forecast/daily?" +
+                "cnt=7&q=94043&units=metric&mode=json&appid=" +
+                BuildConfig.OPEN_WEATHER_MAP_API_KEY;
+        new FetchWeatherTask().execute(url);
 
         return layout;
     }

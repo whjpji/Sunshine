@@ -1,5 +1,6 @@
 package com.whjpji.sunshine;
 
+import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,13 +15,13 @@ import java.util.List;
 /**
  * A placeholder fragment containing a list view.
  */
-public class MainActivityFragment extends Fragment {
+public class ForecastFragment extends Fragment {
     // The adapter of the forecast contents.
     ArrayAdapter <String> mForecastAdapter;
     // A list view of weather forecast.
     ListView mForecastListView;
 
-    public MainActivityFragment() {
+    public ForecastFragment() {
     }
 
     @Override
@@ -37,7 +38,7 @@ public class MainActivityFragment extends Fragment {
                 "Fri - Foggy - 70/46",
                 "Sat - Sunny - 76/68"
         };
-        List<String> weakForecast = Arrays.asList(forecastArray);
+        List <String> weakForecast = Arrays.asList(forecastArray);
 
         // Use an array adapter to adapt the forecasting contents to the list view.
         mForecastAdapter = new ArrayAdapter <>(
@@ -50,5 +51,13 @@ public class MainActivityFragment extends Fragment {
         mForecastListView.setAdapter(mForecastAdapter);
 
         return layout;
+    }
+
+    private class FetchWeatherTask extends AsyncTask <String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... strings) {
+            return null;
+        }
     }
 }

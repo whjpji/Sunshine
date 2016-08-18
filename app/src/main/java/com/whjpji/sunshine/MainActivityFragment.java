@@ -12,20 +12,13 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * A placeholder fragment containing a simple view.
+ * A placeholder fragment containing a list view.
  */
 public class MainActivityFragment extends Fragment {
-    ArrayAdapter <String> mForcastAdapter;
-    ListView mForcastListView;
-
-    final static List<String> FAKE_DATA = Arrays.asList(
-            "Today - Sunny - 88/63",
-            "Tommorrow - Foggy - 70/46",
-            "Weds - Cloudy - 72/63",
-            "Thurs - Rainy - 64/51",
-            "Fri - Foggy - 70/46",
-            "Sat - Sunny - 76/68"
-    );
+    // The adapter of the forecast contents.
+    ArrayAdapter <String> mForecastAdapter;
+    // A list view of weather forecast.
+    ListView mForecastListView;
 
     public MainActivityFragment() {
     }
@@ -35,14 +28,26 @@ public class MainActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         View layout = inflater.inflate(R.layout.fragment_main, container, false);
 
-        mForcastAdapter = new ArrayAdapter <>(
+        // Here is an example fake data of weather forecasting.
+        String [] forecastArray = {
+                "Today - Sunny - 88/63",
+                "Tommorrow - Foggy - 70/46",
+                "Weds - Cloudy - 72/63",
+                "Thurs - Rainy - 64/51",
+                "Fri - Foggy - 70/46",
+                "Sat - Sunny - 76/68"
+        };
+        List<String> weakForecast = Arrays.asList(forecastArray);
+
+        // Use an array adapter to adapt the forecasting contents to the list view.
+        mForecastAdapter = new ArrayAdapter <>(
                 getActivity(),
                 R.layout.list_item_forecast,
                 R.id.list_item_forcast_textview,
-                FAKE_DATA
+                weakForecast
         );
-        mForcastListView = (ListView) layout.findViewById(R.id.listview_forecast);
-        mForcastListView.setAdapter(mForcastAdapter);
+        mForecastListView = (ListView) layout.findViewById(R.id.listview_forecast);
+        mForecastListView.setAdapter(mForecastAdapter);
 
         return layout;
     }

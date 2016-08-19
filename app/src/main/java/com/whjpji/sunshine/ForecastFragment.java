@@ -6,6 +6,9 @@ import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -41,6 +44,11 @@ public class ForecastFragment extends Fragment {
                              Bundle savedInstanceState) {
         View layout = inflater.inflate(R.layout.fragment_forecast, container, false);
 
+        /* Report that this fragment would like to participate in populating the options menu by
+         * receiving a call to onCreateOptionsMenu(Menu, MenuInflater) and related methods.
+         */
+        setHasOptionsMenu(true);
+
         // Here is an example fake data of weather forecasting.
         String [] forecastArray = {
                 "Today - Sunny - 88/63",
@@ -67,6 +75,24 @@ public class ForecastFragment extends Fragment {
         new FetchWeatherTask().execute(url);
 
         return layout;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        // Inflate the menu; this adds items to the action bar if it is present.
+        inflater.inflate(R.menu.forecast_fragment, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_refresh:
+                // TODO: finish the refresh button.
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     /** Parses the json string response

@@ -71,14 +71,13 @@ public class ForecastFragment extends Fragment {
         List <String> weakForecast = Arrays.asList(forecastArray);
 
         // Use an array adapter to adapt the forecasting contents to the list view.
-        // mForecastAdapter = new ArrayAdapter <>(
-        //         getActivity(),
-        //         R.layout.list_item_forecast,
-        //         R.id.list_item_forcast_textview,
-        //         weakForecast
-        // );
+        mForecastAdapter = new ArrayAdapter <>(
+                getActivity(),
+                R.layout.list_item_forecast,
+                R.id.list_item_forcast_textview
+        );
         mForecastListView = (ListView) layout.findViewById(R.id.listview_forecast);
-        // mForecastListView.setAdapter(mForecastAdapter);
+        mForecastListView.setAdapter(mForecastAdapter);
         new FetchWeatherTask().execute(mPostalCode);
 
         return layout;
@@ -236,14 +235,14 @@ public class ForecastFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(String [] weatherStrings) {
-            mForecastAdapter = new ArrayAdapter <>(
-                    getActivity(),
-                    R.layout.list_item_forecast,
-                    R.id.list_item_forcast_textview,
-                    weatherStrings
-            );
-            mForecastListView.setAdapter(mForecastAdapter);
+        protected void onPostExecute(String [] result) {
+            if (result != null) {
+                // Update the data of the adapter.
+                mForecastAdapter.clear();
+                for (String dayForecastStr : result) {
+                    mForecastAdapter.add(dayForecastStr);
+                }
+            }
         }
     }
 }

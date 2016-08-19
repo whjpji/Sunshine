@@ -1,5 +1,6 @@
 package com.whjpji.sunshine;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -33,12 +34,11 @@ import okhttp3.Response;
  */
 public class ForecastFragment extends Fragment {
     // The adapter of the forecast contents.
-    ArrayAdapter <String> mForecastAdapter;
+    private ArrayAdapter <String> mForecastAdapter;
     // A list view of weather forecast.
-    String mUrl = "http://api.openweathermap.org/data/2.5/forecast/daily?" +
-            "cnt=7&q=94043&units=metric&mode=json&appid=" +
-            BuildConfig.OPEN_WEATHER_MAP_API_KEY;
-    ListView mForecastListView;
+    private ListView mForecastListView;
+    // the postal code of the city to query.
+    private String mPostalCode = "94043";
 
     public ForecastFragment() {
     }
@@ -77,7 +77,7 @@ public class ForecastFragment extends Fragment {
         // );
         mForecastListView = (ListView) layout.findViewById(R.id.listview_forecast);
         // mForecastListView.setAdapter(mForecastAdapter);
-        new FetchWeatherTask().execute(mUrl);
+        new FetchWeatherTask().execute(mPostalCode);
 
         return layout;
     }
@@ -93,7 +93,7 @@ public class ForecastFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                new FetchWeatherTask().execute(mUrl);
+                new FetchWeatherTask().execute(mPostalCode);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -106,7 +106,7 @@ public class ForecastFragment extends Fragment {
      */
     @NonNull
     private String [] parseForecastJsonStr(String forecastJsonStr) {
-        List <String> forecastList = null;
+        List <String> forecastList;
         try {
             JSONObject forecastObj = new JSONObject(forecastJsonStr);
             JSONArray forecastArray = forecastObj.getJSONArray("list");
@@ -124,28 +124,49 @@ public class ForecastFragment extends Fragment {
             e.printStackTrace();
             return new String[0];
         }
-        return forecastList.toArray(new String [0]);
+        return forecastList.toArray(new String [] {""});
     }
 
     private class FetchWeatherTask extends AsyncTask <String, Void, String> {
-        private final String TAG = FetchWeatherTask.class.getSimpleName();
+        private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
+        private final String FORECAST_BASE_URL =
+                "http://api.openweathermap.org/data/2.5/forecast/daily?";
+        private final String QUERY_PARAM = "q";
+        private final String FORMAT_PARAM = "mode";
+        private final String UNITS_PARAM = "units";
+        private final String DAYS_PARAM = "cnt";
+        private final String APPID_PARAM = "appid";
 
         @Override
-        protected String doInBackground(String... urls) {
+        protected String doInBackground(String... params) {
+            // Url parameters
+            String format = "json";
+            String units = "metric";
+            int numDays = 7;
+
+            // Use Uri.Builder to build an url with parameters
+            String url = Uri.parse(FORECAST_BASE_URL).buildUpon()
+                    .appendQueryParameter(QUERY_PARAM, params[0])
+                    .appendQueryParameter(FORMAT_PARAM, format)
+                    .appendQueryParameter(UNITS_PARAM, units)
+                    .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
+                    .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
+                    .build().toString();
+
             OkHttpClient okHttpClient = new OkHttpClient();
-            Request request = new Request.Builder().url(urls[0]).get().build();
+            Request request = new Request.Builder().url(url).get().build();
             Response response = null;
             try {
                 response = okHttpClient.newCall(request).execute();
                 if (response.isSuccessful()) {
                     return response.body().string();
                 } else {
-                    Log.e(TAG, "Http request failed.");
+                    Log.e(LOG_TAG, "Http request failed.");
                     return null;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                // Log.e(TAG, e.toString());
+                // Log.e(LOG_TAG, e.toString());
                 return null;
             } finally {
                 if (response != null)

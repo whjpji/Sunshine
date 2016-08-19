@@ -39,7 +39,7 @@ public class ForecastFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View layout = inflater.inflate(R.layout.fragment_main, container, false);
+        View layout = inflater.inflate(R.layout.fragment_forecast, container, false);
 
         // Here is an example fake data of weather forecasting.
         String [] forecastArray = {

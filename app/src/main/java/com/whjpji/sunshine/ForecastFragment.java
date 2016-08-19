@@ -35,6 +35,9 @@ public class ForecastFragment extends Fragment {
     // The adapter of the forecast contents.
     ArrayAdapter <String> mForecastAdapter;
     // A list view of weather forecast.
+    String mUrl = "http://api.openweathermap.org/data/2.5/forecast/daily?" +
+            "cnt=7&q=94043&units=metric&mode=json&appid=" +
+            BuildConfig.OPEN_WEATHER_MAP_API_KEY;
     ListView mForecastListView;
 
     public ForecastFragment() {
@@ -74,10 +77,7 @@ public class ForecastFragment extends Fragment {
         // );
         mForecastListView = (ListView) layout.findViewById(R.id.listview_forecast);
         // mForecastListView.setAdapter(mForecastAdapter);
-        String url = "http://api.openweathermap.org/data/2.5/forecast/daily?" +
-                "cnt=7&q=94043&units=metric&mode=json&appid=" +
-                BuildConfig.OPEN_WEATHER_MAP_API_KEY;
-        new FetchWeatherTask().execute(url);
+        new FetchWeatherTask().execute(mUrl);
 
         return layout;
     }
@@ -93,7 +93,7 @@ public class ForecastFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                // TODO: finish the refresh button.
+                new FetchWeatherTask().execute(mUrl);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

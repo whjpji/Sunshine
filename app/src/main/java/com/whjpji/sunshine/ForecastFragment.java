@@ -2,6 +2,10 @@ package com.whjpji.sunshine;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -143,11 +147,18 @@ public class ForecastFragment extends Fragment {
                 getString(R.string.pref_units_key),
                 getString(R.string.pref_units_default)
         );
+        updateLocation();
+        new FetchWeatherTask().execute(mLocation, mUnits);
+    }
+
+    /**
+     * Update the user preferred location from the shared preference.
+     */
+    private void updateLocation() {
         mLocation = mPreference.getString(
                 getString(R.string.pref_location_key),
                 getString(R.string.pref_location_default)
         );
-        new FetchWeatherTask().execute(mLocation, mUnits);
     }
 
     @Override
@@ -156,8 +167,30 @@ public class ForecastFragment extends Fragment {
             case R.id.action_refresh:
                 updateWeather();
                 return true;
+            case R.id.action_viewLocation:
+                viewPreferredLocationInMap();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    /**
+     * View user preferred location in a map via an implicit intent.
+     */
+    private void viewPreferredLocationInMap() {
+        final String GEO_BASE_URI = "geo:0,0?";
+        final String QUERY_PARAM = "q";
+        updateLocation();
+
+        Uri geoLocation = Uri.parse(GEO_BASE_URI).buildUpon()
+                .appendQueryParameter(QUERY_PARAM, mLocation)
+                .build();
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(geoLocation);
+        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivity(intent);
         }
     }
 

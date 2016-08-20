@@ -1,5 +1,6 @@
 package com.whjpji.sunshine;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
@@ -85,7 +86,12 @@ public class ForecastFragment extends Fragment {
         mForecastListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                makeToast(mForecastAdapter.getItem((int) id));
+                // Start a new activity to display the detailed weather forecast.
+                String forecast = mForecastAdapter.getItem((int) id);
+                // makeToast(forecast);
+                Intent intent = new Intent(getActivity(), DetailActivity.class)
+                        .putExtra(Intent.EXTRA_TEXT, forecast);
+                startActivity(intent);
             }
         });
 

@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,6 +20,9 @@ public class DetailActivity extends AppCompatActivity {
     private static String LOG_TAG = DetailActivity.class.getSimpleName();
     private String mForecast;
     private DetailFragment mFragment;
+    private ShareActionProvider mShareActionProvider;
+
+    private final static String FORECAST_SHARE_HASHING = "#SunshineApp";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +49,38 @@ public class DetailActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.detail, menu);
+
+        // Locate MenuItem with ShareActionProvider.
+        MenuItem shareItem = menu.findItem(R.id.action_share);
+
+        // Fetch and store ShareActionProvider.
+        mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
+
+        // Set share intent.
+        setShareIntent(createShareForecastIntent());
+
         return true;
+    }
+
+    /**
+     * Call to update the share intent.
+     * @param shareIntent the share intent to update.
+     */
+    private void setShareIntent(Intent shareIntent) {
+        if (mShareActionProvider != null) {
+            mShareActionProvider.setShareIntent(shareIntent);
+        }
+    }
+
+    /**
+     * Create an intent for sharing the detailed forecast data.
+     * @return
+     */
+    private Intent createShareForecastIntent() {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, mForecast + FORECAST_SHARE_HASHING);
+        return shareIntent;
     }
 
     @Override

@@ -44,7 +44,9 @@ public class ForecastFragment extends Fragment {
     // A list view of weather forecast.
     private ListView mForecastListView;
     // The postal code of the city to query.
-    private String mLocation = "94043";
+    private String mLocation;
+    // Default units of temperature.
+    private String mUnits;
     // Shared preferences of the user;
     private SharedPreferences mPreference;
 
@@ -83,7 +85,7 @@ public class ForecastFragment extends Fragment {
         mPreference = PreferenceManager.getDefaultSharedPreferences(getActivity());
         mLocation = mPreference.getString(
                 getString(R.string.pref_location_key),
-                getString(R.string.pref_location_defaultValue)
+                getString(R.string.pref_location_default)
         );
 
         // Use an array adapter to adapt the forecasting contents to the list view.
@@ -94,8 +96,9 @@ public class ForecastFragment extends Fragment {
         );
         mForecastListView = (ListView) layout.findViewById(R.id.listview_forecast);
         mForecastListView.setAdapter(mForecastAdapter);
-        new FetchWeatherTask().execute(mLocation);
 
+        // When an item is clicked, it starts a DetailActivity to display the detailed
+        // weather information.
         mForecastListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -109,6 +112,12 @@ public class ForecastFragment extends Fragment {
         });
 
         return layout;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
     }
 
     /**
@@ -126,15 +135,26 @@ public class ForecastFragment extends Fragment {
         inflater.inflate(R.menu.forecast_fragment, menu);
     }
 
+    /**
+     * Update the weather information when the locations or metrics change.
+     */
+    private void updateWeather() {
+        mUnits = mPreference.getString(
+                getString(R.string.pref_units_key),
+                getString(R.string.pref_units_default)
+        );
+        mLocation = mPreference.getString(
+                getString(R.string.pref_location_key),
+                getString(R.string.pref_location_default)
+        );
+        new FetchWeatherTask().execute(mLocation, mUnits);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                mLocation = mPreference.getString(
-                        getString(R.string.pref_location_key),
-                        getString(R.string.pref_location_defaultValue)
-                );
-                new FetchWeatherTask().execute(mLocation);
+                updateWeather();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -237,13 +257,15 @@ public class ForecastFragment extends Fragment {
         @Override
         protected String [] doInBackground(String... params) {
             // Url parameters
+            String location = params[0];
             String format = "json";
-            String units = "metric";
+            String units = params[1];
             int numDays = 7;
+
 
             // Use Uri.Builder to build an url with parameters
             String url = Uri.parse(FORECAST_BASE_URL).buildUpon()
-                    .appendQueryParameter(QUERY_PARAM, params[0])
+                    .appendQueryParameter(QUERY_PARAM, location)
                     .appendQueryParameter(FORMAT_PARAM, format)
                     .appendQueryParameter(UNITS_PARAM, units)
                     .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))

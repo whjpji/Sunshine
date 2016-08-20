@@ -1,14 +1,15 @@
 package com.whjpji.sunshine;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.text.format.Time;
-import android.text.style.TtsSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -42,8 +43,12 @@ public class ForecastFragment extends Fragment {
     private ArrayAdapter <String> mForecastAdapter;
     // A list view of weather forecast.
     private ListView mForecastListView;
-    // the postal code of the city to query.
-    private String mPostalCode = "94043";
+    // The postal code of the city to query.
+    private String mLocation = "94043";
+    // Shared preferences of the user;
+    private SharedPreferences mPreference;
+
+    private static String LOG_TAG = ForecastFragment.class.getSimpleName();
 
     public ForecastFragment() {
     }
@@ -55,6 +60,7 @@ public class ForecastFragment extends Fragment {
          * receiving a call to onCreateOptionsMenu(Menu, MenuInflater) and related methods.
          */
         setHasOptionsMenu(true);
+
     }
 
     @Override
@@ -73,6 +79,13 @@ public class ForecastFragment extends Fragment {
         };
         List <String> weakForecast = Arrays.asList(forecastArray);
 
+        // Set the location preference.
+        mPreference = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mLocation = mPreference.getString(
+                getString(R.string.pref_location_key),
+                getString(R.string.pref_location_defaultValue)
+        );
+
         // Use an array adapter to adapt the forecasting contents to the list view.
         mForecastAdapter = new ArrayAdapter <>(
                 getActivity(),
@@ -81,7 +94,7 @@ public class ForecastFragment extends Fragment {
         );
         mForecastListView = (ListView) layout.findViewById(R.id.listview_forecast);
         mForecastListView.setAdapter(mForecastAdapter);
-        new FetchWeatherTask().execute(mPostalCode);
+        new FetchWeatherTask().execute(mLocation);
 
         mForecastListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -117,7 +130,11 @@ public class ForecastFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                new FetchWeatherTask().execute(mPostalCode);
+                mLocation = mPreference.getString(
+                        getString(R.string.pref_location_key),
+                        getString(R.string.pref_location_defaultValue)
+                );
+                new FetchWeatherTask().execute(mLocation);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

@@ -77,7 +77,8 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
                 LocationEntry.COLUMN_COORD_LAT + " REAL NOT NULL, " +
                 LocationEntry.COLUMN_COORD_LONG + " REAL NOT NULL, " +
 
-                " UNIQUE (" + LocationEntry.COLUMN_CITY_NAME + ", " +
+                " UNIQUE (" + LocationEntry.COLUMN_LOCATION_SETTING + ", " +
+                LocationEntry.COLUMN_CITY_NAME + ", " +
                 LocationEntry.COLUMN_COORD_LAT + ", " +
                 LocationEntry.COLUMN_COORD_LONG + ") ON CONFLICT REPLACE);";
 

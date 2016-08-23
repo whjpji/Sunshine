@@ -148,7 +148,7 @@ public class ForecastFragment extends Fragment {
                 getString(R.string.pref_units_default)
         );
         updateLocation();
-        new FetchWeatherTask().execute(mLocation, mUnits);
+        new FetchWeatherTask(getActivity(), mForecastAdapter).execute(mLocation, mUnits);
     }
 
     /**
@@ -277,68 +277,4 @@ public class ForecastFragment extends Fragment {
         return resultStrs;
     }
 
-    private class FetchWeatherTask extends AsyncTask <String, Void, String []> {
-        private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
-        private final String FORECAST_BASE_URL =
-                "http://api.openweathermap.org/data/2.5/forecast/daily?";
-        private final String QUERY_PARAM = "q";
-        private final String FORMAT_PARAM = "mode";
-        private final String UNITS_PARAM = "units";
-        private final String DAYS_PARAM = "cnt";
-        private final String APPID_PARAM = "appid";
-
-        @Override
-        protected String [] doInBackground(String... params) {
-            // Url parameters
-            String location = params[0];
-            String format = "json";
-            String units = params[1];
-            int numDays = 7;
-
-
-            // Use Uri.Builder to build an url with parameters
-            String url = Uri.parse(FORECAST_BASE_URL).buildUpon()
-                    .appendQueryParameter(QUERY_PARAM, location)
-                    .appendQueryParameter(FORMAT_PARAM, format)
-                    .appendQueryParameter(UNITS_PARAM, units)
-                    .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
-                    .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
-                    .build().toString();
-
-            OkHttpClient okHttpClient = new OkHttpClient();
-            Request request = new Request.Builder().url(url).get().build();
-            Response response = null;
-            try {
-                response = okHttpClient.newCall(request).execute();
-                if (response.isSuccessful()) {
-                    return getWeatherDataFromJson(response.body().string());
-                } else {
-                    Log.e(LOG_TAG, "Http request failed.");
-                    return null;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                // Log.e(LOG_TAG, e.toString());
-                return null;
-            } catch (JSONException e) {
-                e.printStackTrace();
-                return null;
-            } finally {
-                if (response != null)
-                    response.close();
-            }
-        }
-
-        @Override
-        protected void onPostExecute(String [] result) {
-            if (result != null) {
-                // Update the data of the adapter.
-                mForecastAdapter.clear();
-                for (String dayForecastStr : result) {
-                    mForecastAdapter.add(dayForecastStr);
-                }
-                mForecastAdapter.notifyDataSetChanged();
-            }
-        }
-    }
 }

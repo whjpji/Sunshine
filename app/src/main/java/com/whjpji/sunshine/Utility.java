@@ -38,14 +38,15 @@ public class Utility {
                 .equals(context.getString(R.string.pref_units_metric));
     }
 
-    static String formatTemperature(double temperature, boolean isMetric) {
+    static String formatTemperature(Context context, double temperature, boolean isMetric) {
         double temp;
         if ( !isMetric ) {
             temp = 9*temperature/5+32;
         } else {
             temp = temperature;
         }
-        return String.format("%.0f", temp);
+        String formatString = context.getString(R.string.temperature_format);
+        return String.format(formatString, temp);
     }
 
     static String formatDate(long dateInMillis) {

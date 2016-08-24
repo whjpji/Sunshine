@@ -3,6 +3,7 @@ package com.whjpji.sunshine;
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.widget.CursorAdapter;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,11 +77,20 @@ public class ForecastAdapter extends CursorAdapter {
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
         int viewType = getItemViewType(cursor.getPosition());
-        return LayoutInflater.from(context).inflate(
-                viewType == VIEW_TYPE_TODAY ?
-                        R.layout.list_item_forecast_today : R.layout.list_item_forecast,
-                parent, false
-        );
+        int layoutId = -1;
+
+        // Get the layout id of different view types.
+        if (viewType == VIEW_TYPE_TODAY) {
+            layoutId = R.layout.list_item_forecast_today;
+        } else if (viewType == VIEW_TYPE_FUTURE_DAY) {
+            layoutId = R.layout.list_item_forecast;
+        }
+
+        View view = LayoutInflater.from(context).inflate(layoutId, parent, false);
+        ViewHolder viewHolder = new ViewHolder(view);
+        view.setTag(viewHolder);
+
+        return view;
     }
 
     /*
@@ -91,35 +101,47 @@ public class ForecastAdapter extends CursorAdapter {
         // our view is pretty simple here --- just a text view
         // we'll keep the UI functional with a simple (and slow!) binding.
 
+        ViewHolder viewHolder = (ViewHolder) view.getTag();
         // Read weather icon ID from cursor
         int weatherId = cursor.getInt(ForecastFragment.COL_WEATHER_ID);
         // Use placeholder image for now
-        ImageView iconView = (ImageView) view.findViewById(R.id.list_item_icon);
-        iconView.setImageResource(R.drawable.ic_launcher);
+        viewHolder.iconView.setImageResource(R.drawable.ic_launcher);
 
         // Read date from cursor
         String friendlyDayString = Utility.getFriendlyDayString(
                 mContext, cursor.getLong(ForecastFragment.COL_WEATHER_DATE)
         );
-        TextView dateView = (TextView) view.findViewById(R.id.list_item_date_textview);
-        dateView.setText(friendlyDayString);
+        viewHolder.dateView.setText(friendlyDayString);
 
         // Read weather forecast from cursor
         String forecastString = cursor.getString(ForecastFragment.COL_WEATHER_DESC);
-        TextView forecastView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
-        forecastView.setText(forecastString);
+        viewHolder.forecastView.setText(forecastString);
 
         // Read user preference for metric or imperial temperature units
         boolean isMetric = Utility.isMetric(context);
 
         // Read high temperature from cursor
         double high = cursor.getDouble(ForecastFragment.COL_WEATHER_MAX_TEMP);
-        TextView highView = (TextView) view.findViewById(R.id.list_item_high_textview);
-        highView.setText(Utility.formatTemperature(high, isMetric));
+        viewHolder.highView.setText(Utility.formatTemperature(high, isMetric));
 
         // Read low temperature from cursor
         double low = cursor.getDouble(ForecastFragment.COL_WEATHER_MIN_TEMP);
-        TextView lowView = (TextView) view.findViewById(R.id.list_item_low_textview);
-        lowView.setText(Utility.formatTemperature(low, isMetric));
+        viewHolder.lowView.setText(Utility.formatTemperature(low, isMetric));
+    }
+
+    static class ViewHolder {
+        ImageView iconView;
+        TextView dateView;
+        TextView forecastView;
+        TextView highView;
+        TextView lowView;
+
+        public ViewHolder(View view) {
+            iconView = (ImageView) view.findViewById(R.id.list_item_icon);
+            dateView = (TextView) view.findViewById(R.id.list_item_date_textview);
+            forecastView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
+            highView = (TextView) view.findViewById(R.id.list_item_high_textview);
+            lowView = (TextView) view.findViewById(R.id.list_item_low_textview);
+        }
     }
 }

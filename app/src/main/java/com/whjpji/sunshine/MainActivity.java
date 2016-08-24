@@ -11,6 +11,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String FORECAST_FRAGMENT_TAG = "fragment_tag";
+    private String mLocation;
+    private boolean mIsMetric;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,14 +22,15 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        // Initialize the default settings.
+        mLocation = Utility.getPreferredLocation(this);
+        mIsMetric = Utility.isMetric(this);
+
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container_main, new ForecastFragment(), FORECAST_FRAGMENT_TAG)
+                    .commit();
+        }
     }
 
     @Override
@@ -51,5 +55,24 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!mLocation.equals(Utility.getPreferredLocation(this))) {
+            ForecastFragment forecastFragment =
+                    (ForecastFragment) getSupportFragmentManager()
+                            .findFragmentByTag(FORECAST_FRAGMENT_TAG);
+            forecastFragment.onLocationChanged();
+            mLocation = Utility.getPreferredLocation(this);
+        }
+        if (mIsMetric != Utility.isMetric(this)) {
+            ForecastFragment forecastFragment =
+                    (ForecastFragment) getSupportFragmentManager()
+                            .findFragmentByTag(FORECAST_FRAGMENT_TAG);
+            forecastFragment.onUnitsChanged();
+            mIsMetric = Utility.isMetric(this);
+        }
     }
 }

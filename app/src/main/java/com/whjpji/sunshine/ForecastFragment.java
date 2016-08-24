@@ -106,12 +106,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        updateWeather();
-    }
-
-    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -126,6 +120,14 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         new FetchWeatherTask(getActivity()).execute(location);
     }
 
+    public void onLocationChanged() {
+        updateWeather();
+        getLoaderManager().restartLoader(FORECAST_LOADER_ID, null, this);
+    }
+
+    public void onUnitsChanged() {
+        getLoaderManager().restartLoader(FORECAST_LOADER_ID, null, this);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -148,7 +150,12 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         final String GEO_BASE_URI = "geo:0,0?";
         final String QUERY_PARAM = "q";
         String location = Utility.getPreferredLocation(getActivity());
-
+        Uri locationUri = Uri.parse(GEO_BASE_URI).buildUpon()
+                .appendQueryParameter(QUERY_PARAM, location).build();
+        Intent intent = new Intent(Intent.ACTION_VIEW).setData(locationUri);
+        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+            startActivity(intent);
+        }
     }
 
     @Override

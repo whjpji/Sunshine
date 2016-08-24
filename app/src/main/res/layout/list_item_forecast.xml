@@ -22,13 +22,11 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TOMORROW"
             android:id="@+id/list_item_date_textview"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="CLEAR"
             android:id="@+id/list_item_forecast_textview"/>
 
     </LinearLayout>
@@ -42,13 +40,11 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="21"
             android:id="@+id/list_item_high_textview"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="8"
             android:id="@+id/list_item_low_textview"/>
 
     </LinearLayout>

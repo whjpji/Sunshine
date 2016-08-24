@@ -51,10 +51,11 @@ public class DetailFragment extends Fragment
 
     private final int FORECAST_LOADER_ID = 1;
 
-    private final String[] FORECAST_COLUMNS = {
+    private final String[] DETAIL_COLUMNS = {
             WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
             WeatherContract.WeatherEntry.COLUMN_DATE,
             WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+            WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
             WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
             WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
             WeatherContract.WeatherEntry.COLUMN_HUMIDITY,
@@ -66,12 +67,13 @@ public class DetailFragment extends Fragment
     private static final int COL_WEATHER_ID = 0;
     private static final int COL_WEATHER_DATE = 1;
     private static final int COL_WEATHER_DESC = 2;
-    private static final int COL_WEATHER_MAX_TEMP = 3;
-    private static final int COL_WEATHER_MIN_TEMP = 4;
-    private static final int COL_WEATHER_HUMIDITY = 5;
-    private static final int COL_WEATHER_WIND_SPEED = 6;
-    private static final int COL_WEATHER_DEGREES = 7;
-    private static final int COL_WEATHER_PRESSURE = 8;
+    private static final int COL_WEATHER_CONDITION_ID = 3;
+    private static final int COL_WEATHER_MAX_TEMP = 4;
+    private static final int COL_WEATHER_MIN_TEMP = 5;
+    private static final int COL_WEATHER_HUMIDITY = 6;
+    private static final int COL_WEATHER_WIND_SPEED = 7;
+    private static final int COL_WEATHER_DEGREES = 8;
+    private static final int COL_WEATHER_PRESSURE = 9;
 
     public DetailFragment() {
     }
@@ -172,7 +174,7 @@ public class DetailFragment extends Fragment
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(getActivity(),
                 mForecastUri,
-                FORECAST_COLUMNS,
+                DETAIL_COLUMNS,
                 null,
                 null,
                 null
@@ -182,11 +184,11 @@ public class DetailFragment extends Fragment
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Log.v(LOG_TAG, "In onLoadFinished");
-        if (!data.moveToFirst()) return;
+        if (data == null || !data.moveToFirst()) return;
 
         // Set the image icon view.
-        // Use a placeholder now.
-        mIconView.setImageResource(R.drawable.ic_launcher);
+        int weatherId = data.getInt(COL_WEATHER_CONDITION_ID);
+        mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
 
         // Set the date text view.
         String dateString = Utility.formatDate(data.getLong(COL_WEATHER_DATE));

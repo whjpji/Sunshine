@@ -32,7 +32,10 @@ public class DetailActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         // Get data from the intent.
-        mForecast = getIntent().getStringExtra(Intent.EXTRA_TEXT);
+        Intent intent = getIntent();
+        if (intent != null) {
+            mForecast = intent.getDataString();
+        }
         Log.i(LOG_TAG, mForecast);
 
         if (savedInstanceState == null) {

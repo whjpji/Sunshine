@@ -39,7 +39,16 @@
         </activity>
         <provider
             android:authorities="com.whjpji.sunshine"
-            android:name=".data.WeatherProvider"/>
+            android:name=".data.WeatherProvider"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="com.whjpji.sunshine.LICENCE_TO_KILL"/>
     </application>
+    
+    <permission
+        android:name="com.whjpji.sunshine.LICENCE_TO_KILL"
+        android:protectionLevel="dangerous"
+        android:label="Licenced to kill"/>
+
 
 </manifest>

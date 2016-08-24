@@ -19,6 +19,9 @@ import java.util.Date;
  * from a {@link android.database.Cursor} to a {@link android.widget.ListView}.
  */
 public class ForecastAdapter extends CursorAdapter {
+    private final int VIEW_TYPE_TODAY = 0;
+    private final int VIEW_TYPE_FUTURE_DAY = 1;
+
     public ForecastAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
     }
@@ -43,10 +46,20 @@ public class ForecastAdapter extends CursorAdapter {
         return format.format(date).toString();
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        return (position == 0) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
+    }
+
+    @Override
+    public int getViewTypeCount() {
+        return 2;
+    }
+
     /*
-        This is ported from FetchWeatherTask --- but now we go straight from the cursor to the
-        string.
-     */
+            This is ported from FetchWeatherTask --- but now we go straight from the cursor to the
+            string.
+         */
     private String convertCursorRowToUXFormat(Cursor cursor) {
         String highAndLow = formatHighLows(
                 cursor.getDouble(ForecastFragment.COL_WEATHER_MAX_TEMP),
@@ -62,9 +75,12 @@ public class ForecastAdapter extends CursorAdapter {
      */
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        View view = LayoutInflater.from(context).inflate(R.layout.list_item_forecast, parent, false);
-
-        return view;
+        int viewType = getItemViewType(cursor.getPosition());
+        return LayoutInflater.from(context).inflate(
+                viewType == VIEW_TYPE_TODAY ?
+                        R.layout.list_item_forecast_today : R.layout.list_item_forecast,
+                parent, false
+        );
     }
 
     /*

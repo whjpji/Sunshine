@@ -15,9 +15,11 @@
  */
 package com.whjpji.sunshine;
 
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -25,7 +27,10 @@ import android.text.format.Time;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
+import com.whjpji.sunshine.data.WeatherContract;
 import com.whjpji.sunshine.data.WeatherContract.WeatherEntry;
+import com.whjpji.sunshine.data.WeatherDbHelper;
+import com.whjpji.sunshine.data.WeatherProvider;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -109,7 +114,45 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
         // Students: First, check if the location with this city name exists in the db
         // If it exists, return the current ID
         // Otherwise, insert it using the content resolver and the base URI
-        return -1;
+        long locationId;
+
+        // Check if the location exists.
+        // If it is in the database, this query returns its ID from the content provider.
+        Cursor locationCursor = mContext.getContentResolver().query(
+                WeatherContract.LocationEntry.CONTENT_URI,
+                new String[] {WeatherContract.LocationEntry._ID}, // Need to query the ID.
+                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
+                new String[] {locationSetting}, // Query by location setting.
+                null // Default sort order.
+        );
+
+        if (locationCursor.moveToFirst()) {
+            int locationIndex = locationCursor.getColumnIndex(WeatherContract.LocationEntry._ID);
+            locationId = locationCursor.getInt(locationIndex);
+        } else {
+            // Now create a ContentValues object to hold the data.
+            ContentValues locationValues = new ContentValues();
+
+            // Put the data into the ContentValues object.
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_CITY_NAME, cityName);
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING, locationSetting);
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LAT, lat);
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LONG, lon);
+
+            // Now insert the location data into the database.
+            Uri insertedUri = mContext.getContentResolver().insert(
+                    WeatherContract.LocationEntry.CONTENT_URI,
+                    locationValues
+            );
+
+            // The result URI contains the ID for the new one.
+            locationId = ContentUris.parseId(insertedUri);
+        }
+
+        // Remember to close the cursor to prevent memory leak.
+        locationCursor.close();
+
+        return locationId;
     }
 
     /*

@@ -14,6 +14,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -45,15 +48,11 @@ import okhttp3.Response;
 /**
  * A placeholder fragment containing a list view.
  */
-public class ForecastFragment extends Fragment {
+public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks <Cursor> {
     // The adapter of the forecast contents.
     private ForecastAdapter mForecastAdapter;
-    // A list view of weather forecast.
-    private ListView mForecastListView;
-    // Default units of temperature.
-    private String mUnits;
-    // Shared preferences of the user;
-    private SharedPreferences mPreference;
+
+    private static final int LOADER_ID = 100;
 
     private static String LOG_TAG = ForecastFragment.class.getSimpleName();
 
@@ -71,47 +70,20 @@ public class ForecastFragment extends Fragment {
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        getLoaderManager().initLoader(LOADER_ID, null, this);
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
+
         View layout = inflater.inflate(R.layout.fragment_forecast, container, false);
 
-        // Here is an example fake data of weather forecasting.
-        String [] forecastArray = {
-                "Today - Sunny - 88/63",
-                "Tommorrow - Foggy - 70/46",
-                "Weds - Cloudy - 72/63",
-                "Thurs - Rainy - 64/51",
-                "Fri - Foggy - 70/46",
-                "Sat - Sunny - 76/68"
-        };
-        List <String> weakForecast = Arrays.asList(forecastArray);
-
-        // Set the location preference.
-        // mPreference = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        // mLocation = mPreference.getString(
-        //         getString(R.string.pref_location_key),
-        //         getString(R.string.pref_location_default)
-        // );
-        String locationSetting = Utility.getPreferredLocation(getActivity());
-        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
-        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
-                locationSetting, System.currentTimeMillis()
-        );
-        final Cursor cursor = getActivity().getContentResolver().query(weatherForLocationUri,
-                null, null, null, sortOrder);
-
-        // Use an array adapter to adapt the forecasting contents to the list view.
-        // mForecastAdapter = new ArrayAdapter <>(
-        //         getActivity(),
-        //         R.layout.list_item_forecast,
-        //         R.id.list_item_forcast_textview
-        // );
-        mForecastAdapter = new ForecastAdapter(getActivity(), cursor, 0);
-        mForecastListView = (ListView) layout.findViewById(R.id.listview_forecast);
-        mForecastListView.setAdapter(mForecastAdapter);
-
-        // When an item is clicked, it starts a DetailActivity to display the detailed
-        // weather information.
+        ListView listView = (ListView) layout.findViewById(R.id.listview_forecast);
+        listView.setAdapter(mForecastAdapter);
 
         return layout;
     }
@@ -162,4 +134,29 @@ public class ForecastFragment extends Fragment {
 
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String locationSetting = Utility.getPreferredLocation(getActivity());
+        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
+        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
+                locationSetting, System.currentTimeMillis()
+        );
+        return new CursorLoader(getActivity(),
+                weatherForLocationUri,
+                null,
+                null,
+                null,
+                sortOrder
+        );
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mForecastAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mForecastAdapter.swapCursor(null);
+    }
 }

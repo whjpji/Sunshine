@@ -2,6 +2,7 @@ package com.whjpji.sunshine;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -26,6 +27,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.whjpji.sunshine.data.WeatherContract;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,11 +47,9 @@ import okhttp3.Response;
  */
 public class ForecastFragment extends Fragment {
     // The adapter of the forecast contents.
-    private ArrayAdapter <String> mForecastAdapter;
+    private ForecastAdapter mForecastAdapter;
     // A list view of weather forecast.
     private ListView mForecastListView;
-    // The postal code of the city to query.
-    private String mLocation;
     // Default units of temperature.
     private String mUnits;
     // Shared preferences of the user;
@@ -86,34 +87,31 @@ public class ForecastFragment extends Fragment {
         List <String> weakForecast = Arrays.asList(forecastArray);
 
         // Set the location preference.
-        mPreference = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        mLocation = mPreference.getString(
-                getString(R.string.pref_location_key),
-                getString(R.string.pref_location_default)
+        // mPreference = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        // mLocation = mPreference.getString(
+        //         getString(R.string.pref_location_key),
+        //         getString(R.string.pref_location_default)
+        // );
+        String locationSetting = Utility.getPreferredLocation(getActivity());
+        String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
+        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
+                locationSetting, System.currentTimeMillis()
         );
+        final Cursor cursor = getActivity().getContentResolver().query(weatherForLocationUri,
+                null, null, null, sortOrder);
 
         // Use an array adapter to adapt the forecasting contents to the list view.
-        mForecastAdapter = new ArrayAdapter <>(
-                getActivity(),
-                R.layout.list_item_forecast,
-                R.id.list_item_forcast_textview
-        );
+        // mForecastAdapter = new ArrayAdapter <>(
+        //         getActivity(),
+        //         R.layout.list_item_forecast,
+        //         R.id.list_item_forcast_textview
+        // );
+        mForecastAdapter = new ForecastAdapter(getActivity(), cursor, 0);
         mForecastListView = (ListView) layout.findViewById(R.id.listview_forecast);
         mForecastListView.setAdapter(mForecastAdapter);
 
         // When an item is clicked, it starts a DetailActivity to display the detailed
         // weather information.
-        mForecastListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Start a new activity to display the detailed weather forecast.
-                String forecast = mForecastAdapter.getItem((int) id);
-                // makeToast(forecast);
-                Intent intent = new Intent(getActivity(), DetailActivity.class)
-                        .putExtra(Intent.EXTRA_TEXT, forecast);
-                startActivity(intent);
-            }
-        });
 
         return layout;
     }
@@ -122,14 +120,6 @@ public class ForecastFragment extends Fragment {
     public void onStart() {
         super.onStart();
         updateWeather();
-    }
-
-    /**
-     * Make a toast to display some text on the screen.
-     * @param text the text string to display.
-     */
-    private void makeToast(String text) {
-        Toast.makeText(getActivity(), text, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -143,23 +133,10 @@ public class ForecastFragment extends Fragment {
      * Update the weather information when the locations or metrics change.
      */
     private void updateWeather() {
-        mUnits = mPreference.getString(
-                getString(R.string.pref_units_key),
-                getString(R.string.pref_units_default)
-        );
-        updateLocation();
-        new FetchWeatherTask(getActivity(), mForecastAdapter).execute(mLocation, mUnits);
+        String location = Utility.getPreferredLocation(getActivity());
+        new FetchWeatherTask(getActivity()).execute(location);
     }
 
-    /**
-     * Update the user preferred location from the shared preference.
-     */
-    private void updateLocation() {
-        mLocation = mPreference.getString(
-                getString(R.string.pref_location_key),
-                getString(R.string.pref_location_default)
-        );
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -181,100 +158,8 @@ public class ForecastFragment extends Fragment {
     private void viewPreferredLocationInMap() {
         final String GEO_BASE_URI = "geo:0,0?";
         final String QUERY_PARAM = "q";
-        updateLocation();
+        String location = Utility.getPreferredLocation(getActivity());
 
-        Uri geoLocation = Uri.parse(GEO_BASE_URI).buildUpon()
-                .appendQueryParameter(QUERY_PARAM, mLocation)
-                .build();
-
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(geoLocation);
-        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
-            startActivity(intent);
-        }
-    }
-
-    /**
-     * Format the highest and lowest temperature string of the day, rounding it into integer.
-     * @param high the highest temperature of the day.
-     * @param low the lowest temperature of the day.
-     * @return the formatted string "high/low" of the temperature.
-     */
-    private String formatHighLowTemperature(double high, double low) {
-        long roundedHigh = Math.round(high);
-        long roundedLow = Math.round(low);
-        return roundedHigh + "/" + roundedLow;
-    }
-
-    /**
-     * Format the date information from the time given in milliseconds.
-     * @param time date information given in milliseconds.
-     * @return the formatted date information "EEE MM dd".
-     */
-    private String getReadableDateString(long time) {
-        SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MM dd");
-        return shortenedDateFormat.format(time);
-    }
-
-    /** Get and format weather data from the json string.
-     * @param forecastJsonStr json string of the forecast information.
-     * @throws JSONException exceptions may be caught if there are some error in the json string.
-     * @return parsed forecast weather data strings.
-     */
-    @NonNull
-    private String [] getWeatherDataFromJson(String forecastJsonStr)
-            throws JSONException {
-
-        // There are some names of the JSON object that need to be extracted.
-        final String OWN_LIST = "list";
-        final String OWN_WEATHER = "weather";
-        final String OWN_TEMPERATURE = "temp";
-        final String OWN_MAX = "max";
-        final String OWN_MIN = "min";
-        final String OWN_DAYS = "cnt";
-        final String OWN_DESCRIPTION = "description";
-
-        JSONObject forecastJson = new JSONObject(forecastJsonStr);
-        JSONArray weatherArray = forecastJson.getJSONArray(OWN_LIST);
-        int numDays = forecastJson.getInt(OWN_DAYS);
-
-        Time time = new Time();
-        time.setToNow();
-
-        // Get local time.
-        int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), time.gmtoff);
-
-        time = new Time();
-
-        String [] resultStrs = new String [numDays];
-        for (int i = 0; i < numDays; ++i) {
-            // Result format: "date - description - high/low".
-            String date;
-            String description;
-            String highAndLow;
-
-            // Get the JSON object representing the day.
-            JSONObject dayForecast = weatherArray.getJSONObject(i);
-
-            // Get human-readable date string converted from dateTime returned by setJulianDay.
-            long dateTime = time.setJulianDay(julianStartDay + i);
-            date = getReadableDateString(dateTime);
-
-            // Get weather description for the day.
-            JSONObject weatherObject = dayForecast.getJSONArray(OWN_WEATHER).getJSONObject(0);
-            description = weatherObject.getString(OWN_DESCRIPTION);
-
-            // Get the highest and lowest temperature of the day.
-            JSONObject temperatureObject = dayForecast.getJSONObject(OWN_TEMPERATURE);
-            double high = temperatureObject.getDouble(OWN_MAX);
-            double low = temperatureObject.getDouble(OWN_MIN);
-            highAndLow = formatHighLowTemperature(high, low);
-
-            // Assemble it to result string.
-            String weatherStr = date + " - " + description + " - " + highAndLow;
-            resultStrs[i] = weatherStr;
-        }
-        return resultStrs;
     }
 
 }

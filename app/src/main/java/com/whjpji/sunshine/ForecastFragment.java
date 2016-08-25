@@ -1,7 +1,9 @@
 package com.whjpji.sunshine;
 
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.database.Cursor;
+import android.icu.text.TimeZoneFormat;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -26,11 +28,16 @@ import com.whjpji.sunshine.data.WeatherContract;
  * A placeholder fragment containing a list view.
  */
 public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks <Cursor> {
-    private static String LOG_TAG = ForecastFragment.class.getSimpleName();
+    private static final String LOG_TAG = ForecastFragment.class.getSimpleName();
     private static final int FORECAST_LOADER_ID = 100;
+    private static final String POSITION_ARG = "position";
 
     // The adapter of the forecast contents.
     private ForecastAdapter mForecastAdapter;
+
+    private ListView mListView;
+
+    private int mPosition = 0;
 
     private boolean mUseTodayLayout;
 
@@ -82,16 +89,23 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+                             final Bundle savedInstanceState) {
+        final String POSITION_ARG = "position";
+
         mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
 
         mForecastAdapter.setUseTodayLayout(mUseTodayLayout);
 
+        if (savedInstanceState != null && savedInstanceState.containsKey(POSITION_ARG)) {
+            mPosition = savedInstanceState.getInt(POSITION_ARG);
+            Log.d(LOG_TAG, "onCreateView, read saved position: " + mPosition);
+        }
+
         View layout = inflater.inflate(R.layout.fragment_forecast, container, false);
 
-        ListView listView = (ListView) layout.findViewById(R.id.listview_forecast);
-        listView.setAdapter(mForecastAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mListView = (ListView) layout.findViewById(R.id.listview_forecast);
+        mListView.setAdapter(mForecastAdapter);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                 // CursorAdapter returns a cursor at the correct position for getItem(),
@@ -104,6 +118,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                     );
                     // Call the callback function of the main activity.
                     ((Callback) getActivity()).onItemSelected(dateUri);
+                    mPosition = position;
                 }
             }
         });
@@ -183,6 +198,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mForecastAdapter.swapCursor(data);
+        if (mPosition != ListView.INVALID_POSITION) {
+            mListView.smoothScrollToPosition(mPosition);
+        }
     }
 
     @Override
@@ -192,5 +210,15 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     public interface Callback {
         void onItemSelected(Uri dateUri);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        // Call to save the current selected position.
+        if (mPosition != ListView.INVALID_POSITION) {
+            Log.d(LOG_TAG, "onCreateView, saved position: " + mPosition);
+            outState.putInt(POSITION_ARG, mPosition);
+        }
+        super.onSaveInstanceState(outState);
     }
 }

@@ -29,11 +29,11 @@ import com.whjpji.sunshine.data.WeatherContract;
 public class DetailFragment extends Fragment
         implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String LOG_TAG = DetailFragment.class.getSimpleName();
-    private static final String FORECAST_ARG = "forecast";
+    private static final String FORECAST_URI_ARG = "forecast uri";
     private final static String FORECAST_SHARE_HASHING = "#SunshineApp";
 
     private ShareActionProvider mShareActionProvider;
-    private Uri mForecastUri;
+    private Uri mDateUri;
     private String mForecast;
 
     // Layout views on the fragment.
@@ -46,8 +46,6 @@ public class DetailFragment extends Fragment
     private TextView mHumidityView;
     private TextView mWindView;
     private TextView mPressureView;
-
-
 
     private final int FORECAST_LOADER_ID = 1;
 
@@ -78,12 +76,12 @@ public class DetailFragment extends Fragment
     public DetailFragment() {
     }
 
-    public static DetailFragment newInstance(String forecast) {
+    public static DetailFragment newInstance(Uri dateUri) {
 
         Bundle args = new Bundle();
 
         DetailFragment fragment = new DetailFragment();
-        args.putString(FORECAST_ARG, forecast);
+        args.putParcelable(FORECAST_URI_ARG, dateUri);
         fragment.setArguments(args);
         return fragment;
     }
@@ -109,13 +107,12 @@ public class DetailFragment extends Fragment
         super.onCreate(savedInstanceState);
         if (savedInstanceState == null) {
             Bundle args = getArguments();
-            mForecast = args.getString(FORECAST_ARG);
+            if (args != null) {
+                mDateUri = args.getParcelable(FORECAST_URI_ARG);
+            }
         }
         setHasOptionsMenu(true);
-    }
-
-    public void setForecast(String forecast) {
-        this.mForecast = forecast;
+        getLoaderManager().initLoader(FORECAST_LOADER_ID, null, this);
     }
 
     /**
@@ -138,6 +135,7 @@ public class DetailFragment extends Fragment
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
         shareIntent.putExtra(Intent.EXTRA_TEXT, mForecast + FORECAST_SHARE_HASHING);
+        Log.d(LOG_TAG, "Created share intent with \"" + shareIntent.getStringExtra(Intent.EXTRA_TEXT));
         return shareIntent;
     }
 
@@ -160,20 +158,24 @@ public class DetailFragment extends Fragment
         return layout;
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        Intent intent = getActivity().getIntent();
-        if (intent != null) {
-            mForecastUri = intent.getData();
+    public void onUnitsChanged() {
+        getLoaderManager().restartLoader(FORECAST_LOADER_ID, null, this);
+    }
+
+    public void onLocationChanged(String newLocation) {
+        if (mDateUri != null) {
+            long date = WeatherContract.WeatherEntry.getDateFromUri(mDateUri);
+            mDateUri = WeatherContract.WeatherEntry
+                    .buildWeatherLocationWithDate(newLocation, date);
+            getLoaderManager().restartLoader(FORECAST_LOADER_ID, null, this);
         }
-        getLoaderManager().initLoader(FORECAST_LOADER_ID, null, this);
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        // Now create a new CursorLoader.
         return new CursorLoader(getActivity(),
-                mForecastUri,
+                mDateUri,
                 DETAIL_COLUMNS,
                 null,
                 null,

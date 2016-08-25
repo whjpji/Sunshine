@@ -1,6 +1,7 @@
 package com.whjpji.sunshine;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -8,9 +9,11 @@ import android.util.Log;
 import android.view.MenuItem;
 
 public class DetailActivity extends AppCompatActivity {
-    private static String LOG_TAG = DetailActivity.class.getSimpleName();
+    private static final String LOG_TAG = DetailActivity.class.getSimpleName();
+    private static final String DETAIL_FRAGMENT_TAG = "fragment_tag";
     private String mForecast;
     private DetailFragment mFragment;
+    private boolean mIsMetric;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,24 +21,24 @@ public class DetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        // Get data from the intent.
-        Intent intent = getIntent();
-        if (intent != null) {
-            mForecast = intent.getDataString();
-        }
-        Log.i(LOG_TAG, mForecast);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         if (savedInstanceState == null) {
-            mFragment = DetailFragment.newInstance(mForecast);
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, mFragment)
-                    .commit();
-        } else {
-            mFragment.setForecast(mForecast);
+            // Get data from the intent.
+            Intent intent = getIntent();
+            Uri data = null;
+            if (intent != null) {
+                data = intent.getData();
+            }
+            if (data != null) {
+                // Build fragment with given uri data.
+                DetailFragment detailFragment = DetailFragment.newInstance(data);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.container, detailFragment, DETAIL_FRAGMENT_TAG)
+                        .commit();
+            }
         }
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -54,4 +57,16 @@ public class DetailActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    protected void onResume() {
+        super.onResume();
+        if (mIsMetric != Utility.isMetric(this)) {
+            DetailFragment detailFragment =
+                    (DetailFragment) getSupportFragmentManager()
+                            .findFragmentByTag(DETAIL_FRAGMENT_TAG);
+            if (detailFragment != null) {
+                detailFragment.onUnitsChanged();
+            }
+            mIsMetric = Utility.isMetric(this);
+        }
+    }
 }

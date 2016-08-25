@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.telecom.Call;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -24,12 +26,13 @@ import com.whjpji.sunshine.data.WeatherContract;
  * A placeholder fragment containing a list view.
  */
 public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks <Cursor> {
+    private static String LOG_TAG = ForecastFragment.class.getSimpleName();
+    private static final int FORECAST_LOADER_ID = 100;
+
     // The adapter of the forecast contents.
     private ForecastAdapter mForecastAdapter;
 
-    private static final int FORECAST_LOADER_ID = 100;
-
-    private static String LOG_TAG = ForecastFragment.class.getSimpleName();
+    private boolean mUseTodayLayout;
 
     // String array for the Projection.
     private static final String[] FORECAST_COLUMNS = {
@@ -67,19 +70,22 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
          * receiving a call to onCreateOptionsMenu(Menu, MenuInflater) and related methods.
          */
         setHasOptionsMenu(true);
-
+        getLoaderManager().initLoader(FORECAST_LOADER_ID, null, this);
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        getLoaderManager().initLoader(FORECAST_LOADER_ID, null, this);
-        super.onActivityCreated(savedInstanceState);
+    public void setUseTodayLayout(boolean useTodayLayout) {
+        mUseTodayLayout = useTodayLayout;
+        if (mForecastAdapter != null) {
+            mForecastAdapter.setUseTodayLayout(useTodayLayout);
+        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
+
+        mForecastAdapter.setUseTodayLayout(mUseTodayLayout);
 
         View layout = inflater.inflate(R.layout.fragment_forecast, container, false);
 
@@ -93,11 +99,11 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
                     String locationSetting = Utility.getPreferredLocation(getActivity());
-                    Intent intent = new Intent(getActivity(), DetailActivity.class)
-                            .setData(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
-                                    locationSetting, cursor.getLong(COL_WEATHER_DATE)
-                            ));
-                    startActivity(intent);
+                    Uri dateUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
+                            locationSetting, cursor.getLong(COL_WEATHER_DATE)
+                    );
+                    // Call the callback function of the main activity.
+                    ((Callback) getActivity()).onItemSelected(dateUri);
                 }
             }
         });
@@ -182,5 +188,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mForecastAdapter.swapCursor(null);
+    }
+
+    public interface Callback {
+        void onItemSelected(Uri dateUri);
     }
 }

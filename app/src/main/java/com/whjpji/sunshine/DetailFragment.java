@@ -30,7 +30,9 @@ public class DetailFragment extends Fragment
         implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String LOG_TAG = DetailFragment.class.getSimpleName();
     private static final String FORECAST_URI_ARG = "forecast uri";
-    private final static String FORECAST_SHARE_HASHING = "#SunshineApp";
+    private static final String FORECAST_SHARE_HASHING = "#SunshineApp";
+
+    private static final String DATE_URI_ARG = "uri";
 
     private ShareActionProvider mShareActionProvider;
     private Uri mDateUri;
@@ -154,6 +156,9 @@ public class DetailFragment extends Fragment
         mWindView = (TextView) layout.findViewById(R.id.wind_textview);
         mPressureView = (TextView) layout.findViewById(R.id.pressure_textview);
 
+        if (savedInstanceState != null && savedInstanceState.containsKey(DATE_URI_ARG)) {
+            mDateUri = savedInstanceState.getParcelable(DATE_URI_ARG);
+        }
 
         return layout;
     }
@@ -245,5 +250,11 @@ public class DetailFragment extends Fragment
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable(DATE_URI_ARG, mDateUri);
+        super.onSaveInstanceState(outState);
     }
 }

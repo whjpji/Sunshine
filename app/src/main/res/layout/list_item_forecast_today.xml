@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="200dp"
     android:orientation="horizontal"
-    android:background="@drawable/touch_selector"
+    android:background="@color/sunshine_blue"
     android:gravity="center_vertical">
     
     <LinearLayout
+        android:layout_marginLeft="60dp"
+        android:layout_marginStart="60dp"
         android:orientation="vertical"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -16,18 +18,27 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/white"
             android:gravity="center_horizontal"
+            android:fontFamily="sans-serif-condensed"
+            android:textAppearance="?android:textAppearanceLarge"
             android:id="@+id/list_item_date_textview"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:fontFamily="sans-serif-light"
+            android:textSize="72sp"
             android:gravity="center_horizontal"
             android:id="@+id/list_item_high_textview"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:fontFamily="sans-serif-light"
+            android:textSize="36sp"
             android:gravity="center_horizontal"
             android:id="@+id/list_item_low_textview"/>
 
@@ -41,13 +52,16 @@
         android:gravity="center_horizontal">
 
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:id="@+id/list_item_icon"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:fontFamily="sans-serif-condensed"
+            android:textAppearance="?android:textAppearanceLarge"
             android:gravity="center_horizontal"
             android:id="@+id/list_item_forecast_textview"/>
 

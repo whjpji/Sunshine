@@ -193,9 +193,16 @@ public class DetailFragment extends Fragment
         Log.v(LOG_TAG, "In onLoadFinished");
         if (data == null || !data.moveToFirst()) return;
 
+        // Set the weather description text view.
+        String weatherDescription = data.getString(COL_WEATHER_DESC);
+        mDescriptionView.setText(weatherDescription);
+
         // Set the image icon view.
         int weatherId = data.getInt(COL_WEATHER_CONDITION_ID);
         mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
+
+        // Set the description of the ImageView for accessibility.
+        mIconView.setContentDescription(weatherDescription);
 
         // Set the date text view.
         String dateString = Utility.formatDate(data.getLong(COL_WEATHER_DATE));
@@ -204,10 +211,6 @@ public class DetailFragment extends Fragment
         // Set the day text view.
         String dayString = Utility.getDayName(getActivity(), data.getLong(COL_WEATHER_DATE));
         mDayView.setText(dayString);
-
-        // Set the weather description text view.
-        String weatherDescription = data.getString(COL_WEATHER_DESC);
-        mDescriptionView.setText(weatherDescription);
 
         boolean isMetric = Utility.isMetric(getActivity());
 

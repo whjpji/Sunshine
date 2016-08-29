@@ -40,6 +40,7 @@ public class DetailFragment extends Fragment
 
     // Layout views on the fragment.
     private ImageView mIconView;
+    private ImageView mWindFlagView;
     private TextView mDateView;
     private TextView mDayView;
     private TextView mHighView;
@@ -154,6 +155,7 @@ public class DetailFragment extends Fragment
         mLowView = (TextView) layout.findViewById(R.id.low_textview);
         mHumidityView = (TextView) layout.findViewById(R.id.humidity_textview);
         mWindView = (TextView) layout.findViewById(R.id.wind_textview);
+        mWindFlagView = (ImageView) layout.findViewById(R.id.wind_flag_icon);
         mPressureView = (TextView) layout.findViewById(R.id.pressure_textview);
 
         if (savedInstanceState != null && savedInstanceState.containsKey(DATE_URI_ARG)) {
@@ -237,6 +239,14 @@ public class DetailFragment extends Fragment
         float degrees = data.getFloat(COL_WEATHER_DEGREES);
         String wind = Utility.getFormattedWind(getActivity(), windSpeed, degrees);
         mWindView.setText(wind);
+
+        // Set the wind flag view.
+        // String windDirection = Utility.getWindDirection(getActivity(), degrees);
+        // Log.d(LOG_TAG, "wind flag drawable id: " + Utility.getWindFlagDrawableId(windSpeed));
+        // System.out.println("wind flag drawable id: " + Utility.getWindFlagDrawableId(windSpeed));
+        // mWindFlagView.setRotation(degrees);
+        // mWindFlagView.setImageResource(Utility.getWindFlagDrawableId(windSpeed));
+        // mWindFlagView.setContentDescription(windDirection);
 
         // Set the pressure text view.
         String pressure = Utility.getFormattedPressure(

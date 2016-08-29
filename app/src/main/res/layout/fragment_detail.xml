@@ -96,14 +96,26 @@
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-light"
             android:textAppearance="?android:textAppearanceLarge"
-            android:id="@+id/wind_textview"/>
+            android:id="@+id/pressure_textview"/>
 
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-light"
-            android:textAppearance="?android:textAppearanceLarge"
-            android:id="@+id/pressure_textview"/>
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-light"
+                android:textAppearance="?android:textAppearanceLarge"
+                android:id="@+id/wind_textview"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/wind_flag_icon" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

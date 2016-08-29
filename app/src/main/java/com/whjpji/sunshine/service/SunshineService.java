@@ -1,6 +1,7 @@
 package com.whjpji.sunshine.service;
 
 import android.app.IntentService;
+import android.content.BroadcastReceiver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -327,6 +328,16 @@ public class SunshineService extends IntentService {
                     Log.e(LOG_TAG, "Error closing stream", e);
                 }
             }
+        }
+    }
+    public static class AlarmReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Intent sendIntent = new Intent(context, SunshineService.class)
+                    .putExtra(LOCATION_QUERY_EXTRA,
+                            intent.getStringExtra(LOCATION_QUERY_EXTRA));
+            context.startService(sendIntent);
         }
     }
 }

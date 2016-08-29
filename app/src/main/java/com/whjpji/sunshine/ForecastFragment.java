@@ -1,10 +1,14 @@
 package com.whjpji.sunshine;
 
 import android.annotation.TargetApi;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.icu.text.TimeZoneFormat;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -138,11 +142,23 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
      * Update the weather information when the locations or metrics change.
      */
     private void updateWeather() {
-        String location = Utility.getPreferredLocation(getActivity());
         // Start the service.
-        Intent intent = new Intent(getActivity(), SunshineService.class)
+        String location = Utility.getPreferredLocation(getActivity());
+
+        // Start the AlarmReceiver.
+        Intent intent = new Intent(getActivity(), SunshineService.AlarmReceiver.class)
                 .putExtra(SunshineService.LOCATION_QUERY_EXTRA, location);
-        getActivity().startService(intent);
+        PendingIntent alarmIntent =
+                PendingIntent.getBroadcast(getActivity(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
+        AlarmManager alarmManager = (AlarmManager)
+                getActivity().getSystemService(Context.ALARM_SERVICE);
+
+        // Fire the receiver 5 seconds later.
+        alarmManager.set(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + 5000,
+                alarmIntent
+        );
     }
 
     public void onLocationChanged() {
@@ -211,11 +227,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public void onLoaderReset(Loader<Cursor> loader) {
         mForecastAdapter.swapCursor(null);
     }
-
-    public interface Callback {
-        void onItemSelected(Uri dateUri);
-    }
-
     @Override
     public void onSaveInstanceState(Bundle outState) {
         // Call to save the current selected position.
@@ -225,4 +236,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         }
         super.onSaveInstanceState(outState);
     }
+
+    public interface Callback {
+        void onItemSelected(Uri dateUri);
+    }
+
 }

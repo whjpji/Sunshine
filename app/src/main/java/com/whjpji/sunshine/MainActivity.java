@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.whjpji.sunshine.data.WeatherContract;
+import com.whjpji.sunshine.sync.SunshineSyncAdapter;
 
 public class MainActivity extends AppCompatActivity implements ForecastFragment.Callback {
     private static final String FORECAST_FRAGMENT_TAG = "fragment_tag";
@@ -57,6 +58,9 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
         ForecastFragment forecastFragment = (ForecastFragment)
                 getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
         forecastFragment.setUseTodayLayout(!mTwoPane);
+
+        // Initialize the sync adapter.
+        SunshineSyncAdapter.initializeSyncAdapter(this);
     }
 
     @Override

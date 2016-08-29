@@ -27,7 +27,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.whjpji.sunshine.data.WeatherContract;
-import com.whjpji.sunshine.service.SunshineService;
+import com.whjpji.sunshine.sync.SunshineSyncAdapter;
 
 /**
  * A placeholder fragment containing a list view.
@@ -142,23 +142,24 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
      * Update the weather information when the locations or metrics change.
      */
     private void updateWeather() {
-        // Start the service.
-        String location = Utility.getPreferredLocation(getActivity());
+        SunshineSyncAdapter.syncImmediately(getActivity());
+        // // Start the service.
+        // String location = Utility.getPreferredLocation(getActivity());
 
-        // Start the AlarmReceiver.
-        Intent intent = new Intent(getActivity(), SunshineService.AlarmReceiver.class)
-                .putExtra(SunshineService.LOCATION_QUERY_EXTRA, location);
-        PendingIntent alarmIntent =
-                PendingIntent.getBroadcast(getActivity(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
-        AlarmManager alarmManager = (AlarmManager)
-                getActivity().getSystemService(Context.ALARM_SERVICE);
+        // // Start the AlarmReceiver.
+        // Intent intent = new Intent(getActivity(), SunshineService.AlarmReceiver.class)
+        //         .putExtra(SunshineService.LOCATION_QUERY_EXTRA, location);
+        // PendingIntent alarmIntent =
+        //         PendingIntent.getBroadcast(getActivity(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
+        // AlarmManager alarmManager = (AlarmManager)
+        //         getActivity().getSystemService(Context.ALARM_SERVICE);
 
-        // Fire the receiver 5 seconds later.
-        alarmManager.set(
-                AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + 5000,
-                alarmIntent
-        );
+        // // Fire the receiver 5 seconds later.
+        // alarmManager.set(
+        //         AlarmManager.ELAPSED_REALTIME_WAKEUP,
+        //         SystemClock.elapsedRealtime() + 5000,
+        //         alarmIntent
+        // );
     }
 
     public void onLocationChanged() {

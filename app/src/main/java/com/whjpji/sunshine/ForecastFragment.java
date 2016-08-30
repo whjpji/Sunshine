@@ -1,21 +1,14 @@
 package com.whjpji.sunshine;
 
-import android.annotation.TargetApi;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.icu.text.TimeZoneFormat;
 import android.net.Uri;
-import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.telecom.Call;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -177,7 +170,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             case R.id.action_refresh:
                 updateWeather();
                 return true;
-            case R.id.action_viewLocation:
+            case R.id.action_map:
                 viewPreferredLocationInMap();
                 return true;
             default:
@@ -189,14 +182,24 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
      * View user preferred location in a map via an implicit intent.
      */
     private void viewPreferredLocationInMap() {
-        final String GEO_BASE_URI = "geo:0,0?";
-        final String QUERY_PARAM = "q";
-        String location = Utility.getPreferredLocation(getActivity());
-        Uri locationUri = Uri.parse(GEO_BASE_URI).buildUpon()
-                .appendQueryParameter(QUERY_PARAM, location).build();
-        Intent intent = new Intent(Intent.ACTION_VIEW).setData(locationUri);
-        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
-            startActivity(intent);
+        // Use the URI scheme for showing a location found on a map. This super-handy
+        // intent is detailed in the "Common Intents" page of Android's developer site:
+        // http://developer.android.com/guide/components/intents-common.html#Maps
+        if (mForecastAdapter != null) {
+            Cursor cursor = mForecastAdapter.getCursor();
+            if (cursor != null && cursor.moveToFirst()) {
+                String lat = cursor.getString(COL_COORD_LAT);
+                String lon = cursor.getString(COL_COORD_LONG);
+                final String GEO_BASE_URI = "geo:";
+                Uri locationUri = Uri.parse(GEO_BASE_URI + lat + "," + lon);
+                Intent intent = new Intent(Intent.ACTION_VIEW).setData(locationUri);
+                if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+                    startActivity(intent);
+                } else {
+                    Log.d(LOG_TAG, "Couldn't call " + locationUri +
+                            ", no receiving apps installed");
+                }
+            }
         }
     }
 

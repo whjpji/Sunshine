@@ -1,6 +1,9 @@
 package com.whjpji.sunshine;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.Nullable;
@@ -121,6 +124,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             }
         });
 
+        // getActivity().registerReceiver(mSyncFinishedReceiver,
+        //         new IntentFilter(SunshineSyncAdapter.SYNC_FINISHED));
         return layout;
     }
 
@@ -136,11 +141,11 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
      */
     private void updateWeather() {
         SunshineSyncAdapter.syncImmediately(getActivity());
+        getLoaderManager().restartLoader(FORECAST_LOADER_ID, null, ForecastFragment.this);
     }
 
     public void onLocationChanged() {
         updateWeather();
-        getLoaderManager().restartLoader(FORECAST_LOADER_ID, null, this);
     }
 
     public void onUnitsChanged() {
@@ -227,5 +232,4 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public interface Callback {
         void onItemSelected(Uri dateUri);
     }
-
 }

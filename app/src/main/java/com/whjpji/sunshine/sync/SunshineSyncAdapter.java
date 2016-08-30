@@ -44,6 +44,7 @@ import java.util.Calendar;
 import java.util.Vector;
 
 public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
+    public static final String SYNC_FINISHED = "sync_finished";
     public static final int SYNC_INTERVAL = 60 * 180;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
     public final String LOG_TAG = SunshineSyncAdapter.class.getSimpleName();

@@ -136,23 +136,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
      */
     private void updateWeather() {
         SunshineSyncAdapter.syncImmediately(getActivity());
-        // // Start the service.
-        // String location = Utility.getPreferredLocation(getActivity());
-
-        // // Start the AlarmReceiver.
-        // Intent intent = new Intent(getActivity(), SunshineService.AlarmReceiver.class)
-        //         .putExtra(SunshineService.LOCATION_QUERY_EXTRA, location);
-        // PendingIntent alarmIntent =
-        //         PendingIntent.getBroadcast(getActivity(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
-        // AlarmManager alarmManager = (AlarmManager)
-        //         getActivity().getSystemService(Context.ALARM_SERVICE);
-
-        // // Fire the receiver 5 seconds later.
-        // alarmManager.set(
-        //         AlarmManager.ELAPSED_REALTIME_WAKEUP,
-        //         SystemClock.elapsedRealtime() + 5000,
-        //         alarmIntent
-        // );
     }
 
     public void onLocationChanged() {
@@ -167,9 +150,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_refresh:
-                updateWeather();
-                return true;
+            // case R.id.action_refresh:
+            //     updateWeather();
+            //     return true;
             case R.id.action_map:
                 viewPreferredLocationInMap();
                 return true;
